@@ -2,7 +2,11 @@
   "name": "@pxlwidgets/table-selection",
   "version": "0.9.2",
   "author": "Wouter Smit",
-  "repository": "",
+  "repository": "https://github.com/PXLWidgets/table-selection",
+  "homepage": "https://github.com/PXLWidgets/table-selection",
+  "support": {
+    "issues": "https://github.com/PXLWidgets/table-selection/issues"
+  },
   "description": "Adds vertical and rectangular selection to HTML tables to allow copy of specific columns and rows without copying contents of other cells in range.",
   "keywords": [
     "table",

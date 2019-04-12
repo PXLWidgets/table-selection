@@ -1,5 +1,5 @@
 /*!
- * TableSelection library v0.9.2 (https://github.com/WouterWidgets/table-selection)
+ * TableSelection library v0.9.1 (https://github.com/WouterWidgets/table-selection)
  * Copyright (c) 2018 Wouter Smit
  * Licensed under MIT (https://github.com/WouterWidgets/table-selection/blob/master/LICENSE)
 */
@@ -23,7 +23,6 @@ class TableSelection {
     setEventHandlers() {
         document.addEventListener('selectionchange', this.selectionChangeHandler.bind(this));
         document.addEventListener('copy', this.copyHandler.bind(this));
-        window.addEventListener('blur', this.deselect.bind(this));
     }
 
     selectionChangeHandler() {
@@ -58,9 +57,12 @@ class TableSelection {
     }
 
     getCellsInSelectionRange(selection) {
+
         const tbody = selection.trs.start.parentElement;
-        const trStartIndex = selection.trs.start.rowIndex - 1;
-        const trEndIndex = selection.trs.end.rowIndex - 1;
+        const hasThead = tbody.previousElementSibling && tbody.previousElementSibling.matches('thead');
+
+        const trStartIndex = selection.trs.start.rowIndex - (hasThead ? 1 : 0);
+        const trEndIndex = selection.trs.end.rowIndex - (hasThead ? 1 : 0);
 
         const tdStartIndex = selection.tds.start.cellIndex;
         const tdEndIndex = selection.tds.end.cellIndex;
@@ -159,9 +161,12 @@ class TableSelection {
             rowData[rowIndex].push(cell.innerText);
         });
 
-        rowData.forEach(row => {
-            data.push(row.join("\t"));
-        });
+        for (const i in rowData) {
+            if (!rowData.hasOwnProperty(i)) {
+                continue;
+            }
+            data.push(rowData[i].join("\t"));
+        }
 
         return data.join("\n");
     }

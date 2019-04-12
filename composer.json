@@ -14,7 +14,7 @@
     "row",
     "cell"
   ],
-  "homepage": "https://github.com/WouterWidgets/table-selection",
+  "homepage": "https://github.com/PXLWidgets/table-selection",
   "authors": [
     {
       "name": "Wouter Smit",
@@ -22,7 +22,7 @@
     }
   ],
   "support": {
-    "issues": "https://github.com/WouterWidgets/table-selection/issues"
+    "issues": "https://github.com/PXLWidgets/table-selection/issues"
   },
   "license": "MIT"
 }
