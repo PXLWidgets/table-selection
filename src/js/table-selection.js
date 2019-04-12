@@ -6,7 +6,7 @@
 
 class TableSelection {
 
-    constructor(selector = '.table-selection', selectedClass = 'selected') {
+    constructor(selector = ".table-selection", selectedClass = "selected") {
         this.selector = selector;
         this.selectedClass = selectedClass;
 
@@ -16,13 +16,13 @@ class TableSelection {
         this.setEventHandlers();
     }
 
-    static initialize(selector = '.table-selection', selectedClass = 'selected') {
-        new TableSelection(selector, selectedClass);
+    static initialize(selector = ".table-selection", selectedClass = "selected") {
+        return new TableSelection(selector, selectedClass);
     }
 
     setEventHandlers() {
-        document.addEventListener('selectionchange', this.selectionChangeHandler.bind(this));
-        document.addEventListener('copy', this.copyHandler.bind(this));
+        document.addEventListener("selectionchange", this.selectionChangeHandler.bind(this));
+        document.addEventListener("copy", this.copyHandler.bind(this));
     }
 
     selectionChangeHandler() {
@@ -59,7 +59,7 @@ class TableSelection {
     getCellsInSelectionRange(selection) {
 
         const tbody = selection.trs.start.parentElement;
-        const hasThead = tbody.previousElementSibling && tbody.previousElementSibling.matches('thead');
+        const hasThead = tbody.previousElementSibling && tbody.previousElementSibling.matches("thead");
 
         const trStartIndex = selection.trs.start.rowIndex - (hasThead ? 1 : 0);
         const trEndIndex = selection.trs.end.rowIndex - (hasThead ? 1 : 0);
@@ -100,8 +100,8 @@ class TableSelection {
             end = end.parentElement;
         }
 
-        start = start.closest('td');
-        end = end.closest('td');
+        start = start.closest("td");
+        end = end.closest("td");
 
         if (!start || !end) {
             return;
@@ -111,7 +111,7 @@ class TableSelection {
             [end, start] = [start, end];
         }
 
-        return {start, end}
+        return {start, end};
     }
 
     getSelectionTrs(tds) {
@@ -119,24 +119,32 @@ class TableSelection {
             return;
         }
 
-        let start = tds.start.closest('tr');
-        let end = tds.end.closest('tr');
+        let start = tds.start.closest("tr");
+        let end = tds.end.closest("tr");
 
         if (start.rowIndex > end.rowIndex) {
             [end, start] = [start, end];
         }
 
-        return {start, end}
+        return {start, end};
     }
 
     showSelection() {
-        this.selection && this.selection.cells.forEach(cell => {
+        if (!this.selection) {
+            return;
+        }
+
+        this.selection.cells.forEach(cell => {
             cell.classList.add(this.selectedClass);
         });
     }
 
     hideSelection() {
-        this.selection && this.selection.cells.forEach(cell => {
+        if (!this.selection) {
+            return;
+        }
+
+        this.selection.cells.forEach(cell => {
             cell.classList.remove(this.selectedClass);
         });
     }
@@ -152,8 +160,8 @@ class TableSelection {
     }
 
     getSelectionText() {
-        let rowData = {},
-            data = [];
+        let rowData = {};
+        let data = [];
 
         this.selection.cells.forEach(cell => {
             const rowIndex = cell.parentElement.rowIndex;
@@ -175,7 +183,7 @@ class TableSelection {
         if (!this.selection) {
             return;
         }
-        e.clipboardData.setData('text/plain', this.getSelectionText());
+        e.clipboardData.setData("text/plain", this.getSelectionText());
         e.preventDefault();
     }
 
