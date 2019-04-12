@@ -3,12 +3,12 @@ const {resolve} = require("path");
 
 module.exports = {
     entry: {
-        "package-name": "./src/index.ts",
-        "package-name.min": "./src/index.ts",
+        "table-selection": "./src/index.ts",
+        "table-selection.min": "./src/index.ts",
     },
     mode: "production",
     output: {
-        filename: "table-selection.js",
+        // filename: "table-selection.js",
         library: "TableSelection",
         libraryTarget: "umd",
         path: resolve(__dirname, "umd"),

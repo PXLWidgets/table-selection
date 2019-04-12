@@ -1,12 +1,28 @@
+
+interface ISelectionSnapshot {
+    tds: HTMLTableCellElement[];
+    trs: HTMLTableRowElement[];
+    cells?: HTMLTableCellElement[];
+}
+
 /*!
  * TableSelection library v0.9.1 (https://github.com/PXLWidgets/table-selection)
  * Copyright (c) 2018 Wouter Smit
  * Licensed under MIT (https://github.com/PXLWidgets/table-selection/blob/master/LICENSE)
 */
-
 class TableSelection {
 
-    constructor(selector = ".table-selection", selectedClass = "selected") {
+    public static initialize(selector = '.table-selection', selectedClass = 'selected') {
+        return new TableSelection(selector, selectedClass);
+    }
+
+    protected selector: string;
+    protected selectedClass: string;
+
+    protected selection: ISelectionSnapshot | null;
+    protected nativeSelection: Selection | null;
+
+    constructor(selector = '.table-selection', selectedClass = 'selected') {
         this.selector = selector;
         this.selectedClass = selectedClass;
 
@@ -16,16 +32,12 @@ class TableSelection {
         this.setEventHandlers();
     }
 
-    static initialize(selector = ".table-selection", selectedClass = "selected") {
-        return new TableSelection(selector, selectedClass);
+    public setEventHandlers() {
+        document.addEventListener('selectionchange', this.selectionChangeHandler.bind(this));
+        document.addEventListener('copy', this.copyHandler.bind(this));
     }
 
-    setEventHandlers() {
-        document.addEventListener("selectionchange", this.selectionChangeHandler.bind(this));
-        document.addEventListener("copy", this.copyHandler.bind(this));
-    }
-
-    selectionChangeHandler() {
+    public selectionChangeHandler() {
         this.deselect();
         this.nativeSelection = window.getSelection ? getSelection() : null;
 
@@ -37,18 +49,24 @@ class TableSelection {
         this.showSelection();
     }
 
-    getSelection() {
+    public getSelection() {
         const tds = this.getSelectionTds();
 
-        if (!tds || !tds.start.closest(this.selector)) {
+        if ( ! tds) {
+            return;
+        }
+
+        const firstElement: HTMLElement = tds.start as HTMLElement;
+
+        if ( ! firstElement.closest(this.selector)) {
             return;
         }
 
         const trs = this.getSelectionTrs(tds);
 
         this.selection = {
-            tds: tds,
-            trs: trs,
+            tds,
+            trs,
         };
 
         this.selection.cells = this.getCellsInSelectionRange(this.selection);
@@ -56,10 +74,10 @@ class TableSelection {
         return this.selection;
     }
 
-    getCellsInSelectionRange(selection) {
+    public getCellsInSelectionRange(selection) {
 
         const tbody = selection.trs.start.parentElement;
-        const hasThead = tbody.previousElementSibling && tbody.previousElementSibling.matches("thead");
+        const hasThead = tbody.previousElementSibling && tbody.previousElementSibling.matches('thead');
 
         const trStartIndex = selection.trs.start.rowIndex - (hasThead ? 1 : 0);
         const trEndIndex = selection.trs.end.rowIndex - (hasThead ? 1 : 0);
@@ -73,7 +91,7 @@ class TableSelection {
         ;
 
         let cells = [];
-        trs.forEach(tr => {
+        trs.forEach((tr) => {
             const tds = Array
                 .from(tr.cells)
                 .slice(tdStartIndex, tdEndIndex + 1);
@@ -84,11 +102,15 @@ class TableSelection {
         return cells;
     }
 
-    getSelectionTds() {
-        let start = this.nativeSelection.anchorNode;
-        let end = this.nativeSelection.focusNode;
+    public getSelectionTds() {
 
-        if (!start || !end) {
+        if ( ! this.nativeSelection) {
+            return;
+        }
+        let start = this.nativeSelection.anchorNode as HTMLTableCellElement | null;
+        let end   = this.nativeSelection.focusNode as HTMLTableCellElement | null;
+
+        if (! start || ! end) {
             return;
         }
 
@@ -100,8 +122,8 @@ class TableSelection {
             end = end.parentElement;
         }
 
-        start = start.closest("td");
-        end = end.closest("td");
+        start = start.closest('td');
+        end = end.closest('td');
 
         if (!start || !end) {
             return;
@@ -114,13 +136,13 @@ class TableSelection {
         return {start, end};
     }
 
-    getSelectionTrs(tds) {
+    public getSelectionTrs(tds) {
         if (!tds.start || !tds.end) {
             return;
         }
 
-        let start = tds.start.closest("tr");
-        let end = tds.end.closest("tr");
+        let start = tds.start.closest('tr');
+        let end = tds.end.closest('tr');
 
         if (start.rowIndex > end.rowIndex) {
             [end, start] = [start, end];
@@ -129,27 +151,27 @@ class TableSelection {
         return {start, end};
     }
 
-    showSelection() {
+    public showSelection() {
         if (!this.selection) {
             return;
         }
 
-        this.selection.cells.forEach(cell => {
+        this.selection.cells.forEach((cell) => {
             cell.classList.add(this.selectedClass);
         });
     }
 
-    hideSelection() {
+    public hideSelection() {
         if (!this.selection) {
             return;
         }
 
-        this.selection.cells.forEach(cell => {
+        this.selection.cells.forEach((cell) => {
             cell.classList.remove(this.selectedClass);
         });
     }
 
-    deselect() {
+    public deselect() {
         if (!this.selection) {
             return;
         }
@@ -159,11 +181,11 @@ class TableSelection {
         this.nativeSelection = null;
     }
 
-    getSelectionText() {
-        let rowData = {};
-        let data = [];
+    public getSelectionText() {
+        const rowData = {};
+        const data = [];
 
-        this.selection.cells.forEach(cell => {
+        this.selection.cells.forEach((cell) => {
             const rowIndex = cell.parentElement.rowIndex;
             rowData[rowIndex] = rowData[rowIndex] || [];
             rowData[rowIndex].push(cell.innerText);
@@ -173,17 +195,17 @@ class TableSelection {
             if (!rowData.hasOwnProperty(i)) {
                 continue;
             }
-            data.push(rowData[i].join("\t"));
+            data.push(rowData[i].join('\t'));
         }
 
-        return data.join("\n");
+        return data.join('\n');
     }
 
-    copyHandler(e) {
-        if (!this.selection) {
+    public copyHandler(e) {
+        if ( ! this.selection) {
             return;
         }
-        e.clipboardData.setData("text/plain", this.getSelectionText());
+        e.clipboardData.setData('text/plain', this.getSelectionText());
         e.preventDefault();
     }
 
