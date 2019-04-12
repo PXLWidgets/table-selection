@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "lib": ["es2015", "dom"],
+        "target": "es5",
+        "module":"commonjs",
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "sourceMap": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "declaration": true,
+        "outDir": "cjs"
+    },
+    "include":[
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "cjs",
+        "umd",
+        "esm"
+    ]
+}

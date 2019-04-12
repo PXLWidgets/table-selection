@@ -1,0 +1,16 @@
+@table-selection-highlight-color: fade(#007bff, 25%);
+
+.table-selection *::selection {
+  background: transparent;
+  color: inherit;
+}
+
+.table-selection *::-moz-selection {
+  background: transparent;
+  color: inherit;
+}
+
+.table-selection td.selected,
+.table-striped.table-selection td.selected {
+  background: @table-selection-highlight-color;
+}
