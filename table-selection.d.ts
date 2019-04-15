@@ -1,13 +1,13 @@
-declare const TableSelection: TableSelection.Static;
+declare const TableSelection: TableSelection.IStatic;
 export default TableSelection;
 export as namespace TableSelection;
 
-import { TableSelection } from './js/TableSelection';
+import { TableSelection as TableSelectionImplementation } from './src/js/table-selection';
 
 declare namespace TableSelection {
 
-    interface Static {
-        staticMethod(selector: string): TableSelection;
+    interface IStatic {
+        staticMethod(selector: string): TableSelectionImplementation;
     }
 
     // Public object interfaces go here

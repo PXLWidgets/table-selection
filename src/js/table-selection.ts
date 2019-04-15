@@ -1,16 +1,26 @@
-
-interface ISelectionSnapshot {
-    tds: HTMLTableCellElement[];
-    trs: HTMLTableRowElement[];
-    cells?: HTMLTableCellElement[];
-}
-
 /*!
  * TableSelection library v0.9.1 (https://github.com/PXLWidgets/table-selection)
  * Copyright (c) 2018 Wouter Smit
  * Licensed under MIT (https://github.com/PXLWidgets/table-selection/blob/master/LICENSE)
 */
-class TableSelection {
+
+interface ITableRowRange {
+    start: HTMLTableRowElement;
+    end: HTMLTableRowElement;
+}
+
+interface ITableCellRange {
+    start: HTMLTableCellElement;
+    end: HTMLTableCellElement;
+}
+
+interface ISelectionSnapshot {
+    trs: ITableRowRange;
+    tds: ITableCellRange;
+    cells?: HTMLTableCellElement[];
+}
+
+export class TableSelection {
 
     public static initialize(selector = '.table-selection', selectedClass = 'selected') {
         return new TableSelection(selector, selectedClass);
@@ -41,7 +51,7 @@ class TableSelection {
         this.deselect();
         this.nativeSelection = window.getSelection ? getSelection() : null;
 
-        if (!this.nativeSelection) {
+        if (! this.nativeSelection) {
             return;
         }
 
@@ -53,16 +63,20 @@ class TableSelection {
         const tds = this.getSelectionTds();
 
         if ( ! tds) {
-            return;
+            return null;
         }
 
         const firstElement: HTMLElement = tds.start as HTMLElement;
 
         if ( ! firstElement.closest(this.selector)) {
-            return;
+            return null;
         }
 
         const trs = this.getSelectionTrs(tds);
+
+        if ( !trs ) {
+            return null;
+        }
 
         this.selection = {
             tds,
@@ -74,9 +88,9 @@ class TableSelection {
         return this.selection;
     }
 
-    public getCellsInSelectionRange(selection) {
+    public getCellsInSelectionRange(selection: ISelectionSnapshot) {
 
-        const tbody = selection.trs.start.parentElement;
+        const tbody = (selection.trs.start.parentElement as HTMLTableSectionElement);
         const hasThead = tbody.previousElementSibling && tbody.previousElementSibling.matches('thead');
 
         const trStartIndex = selection.trs.start.rowIndex - (hasThead ? 1 : 0);
@@ -85,64 +99,31 @@ class TableSelection {
         const tdStartIndex = selection.tds.start.cellIndex;
         const tdEndIndex = selection.tds.end.cellIndex;
 
-        const trs = Array
+        const trs: HTMLTableRowElement[] = Array
             .from(tbody.rows)
             .slice(trStartIndex, trEndIndex + 1)
         ;
 
-        let cells = [];
+        let cellsInRange: HTMLTableCellElement[] = [];
+
         trs.forEach((tr) => {
             const tds = Array
                 .from(tr.cells)
                 .slice(tdStartIndex, tdEndIndex + 1);
 
-            cells = cells.concat(tds);
+            cellsInRange = cellsInRange.concat(tds);
         });
 
-        return cells;
+        return cellsInRange;
     }
 
-    public getSelectionTds() {
-
-        if ( ! this.nativeSelection) {
-            return;
-        }
-        let start = this.nativeSelection.anchorNode as HTMLTableCellElement | null;
-        let end   = this.nativeSelection.focusNode as HTMLTableCellElement | null;
-
-        if (! start || ! end) {
-            return;
+    public getSelectionTrs(tds: ITableCellRange): ITableRowRange | null {
+        if (! tds.start || ! tds.end) {
+            return null;
         }
 
-        if (start.nodeType !== 1) {
-            start = start.parentElement;
-        }
-
-        if (end.nodeType !== 1) {
-            end = end.parentElement;
-        }
-
-        start = start.closest('td');
-        end = end.closest('td');
-
-        if (!start || !end) {
-            return;
-        }
-
-        if (start.cellIndex > end.cellIndex) {
-            [end, start] = [start, end];
-        }
-
-        return {start, end};
-    }
-
-    public getSelectionTrs(tds) {
-        if (!tds.start || !tds.end) {
-            return;
-        }
-
-        let start = tds.start.closest('tr');
-        let end = tds.end.closest('tr');
+        let start = tds.start.closest('tr') as HTMLTableRowElement;
+        let end = tds.end.closest('tr') as HTMLTableRowElement;
 
         if (start.rowIndex > end.rowIndex) {
             [end, start] = [start, end];
@@ -151,8 +132,45 @@ class TableSelection {
         return {start, end};
     }
 
+    public getSelectionTds(): ITableCellRange | null {
+        if ( ! this.nativeSelection) {
+            return null;
+        }
+
+        let startNode = this.nativeSelection.anchorNode as Node | HTMLElement | null;
+        let endNode   = this.nativeSelection.focusNode as Node | HTMLElement | null;
+
+        if (! startNode || ! endNode) {
+            return null;
+        }
+
+        if (startNode.nodeType !== 1) {
+            startNode = startNode.parentElement as HTMLElement;
+        }
+
+        if (endNode.nodeType !== 1) {
+            endNode = endNode.parentElement as HTMLElement;
+        }
+
+        startNode = (startNode as HTMLElement).closest('td') as HTMLTableCellElement | null;
+        endNode = (endNode as HTMLElement).closest('td') as HTMLTableCellElement | null;
+
+        if (! startNode || ! endNode) {
+            return null;
+        }
+
+        let start: HTMLTableCellElement = startNode as HTMLTableCellElement;
+        let end: HTMLTableCellElement = endNode as HTMLTableCellElement;
+
+        if (start.cellIndex > end.cellIndex) {
+            [end, start] = [start, end];
+        }
+
+        return {start, end};
+    }
+
     public showSelection() {
-        if (!this.selection) {
+        if (! this.selection || ! this.selection.cells) {
             return;
         }
 
@@ -162,7 +180,7 @@ class TableSelection {
     }
 
     public hideSelection() {
-        if (!this.selection) {
+        if (! this.selection || ! this.selection.cells) {
             return;
         }
 
@@ -172,7 +190,7 @@ class TableSelection {
     }
 
     public deselect() {
-        if (!this.selection) {
+        if (! this.selection) {
             return;
         }
 
@@ -181,18 +199,25 @@ class TableSelection {
         this.nativeSelection = null;
     }
 
-    public getSelectionText() {
+    public getSelectionText(): string | null {
+        if (! this.selection || ! this.selection.cells) {
+            return null;
+        }
+
         const rowData = {};
         const data = [];
 
         this.selection.cells.forEach((cell) => {
-            const rowIndex = cell.parentElement.rowIndex;
+            if (! cell.parentElement) {
+                return;
+            }
+            const rowIndex = (cell.parentElement as HTMLTableRowElement).rowIndex;
             rowData[rowIndex] = rowData[rowIndex] || [];
             rowData[rowIndex].push(cell.innerText);
         });
 
         for (const i in rowData) {
-            if (!rowData.hasOwnProperty(i)) {
+            if (! rowData.hasOwnProperty(i)) {
                 continue;
             }
             data.push(rowData[i].join('\t'));
@@ -201,11 +226,18 @@ class TableSelection {
         return data.join('\n');
     }
 
-    public copyHandler(e) {
+    public copyHandler(e: ClipboardEvent) {
         if ( ! this.selection) {
             return;
         }
-        e.clipboardData.setData('text/plain', this.getSelectionText());
+
+        const selectionText = this.getSelectionText();
+
+        if ( ! selectionText) {
+            return;
+        }
+
+        e.clipboardData.setData('text/plain', selectionText);
         e.preventDefault();
     }
 
