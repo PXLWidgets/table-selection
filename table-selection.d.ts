@@ -7,7 +7,7 @@ import { TableSelection as TableSelectionImplementation } from './src/js/table-s
 declare namespace TableSelection {
 
     interface IStatic {
-        staticMethod(selector: string): TableSelectionImplementation;
+        staticMethod(selector: string, activeClass: string): TableSelectionImplementation;
     }
 
     // Public object interfaces go here
