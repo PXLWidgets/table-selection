@@ -1,13 +1,13 @@
-import PublicInterface from '../table-selection';
+import ITableSelection from '../table-selection';
+import IStatic = ITableSelection.IStatic;
 
-import IStatic = PublicInterface.Static;
-
-// IStatic should be implemented by named exports:
-export function initialize() {
-    return 0;
-}
+import { TableSelection } from './js/table-selection';
 
 // IStatic should be implemented by default export as well:
-const defaultNamespace: IStatic = { staticMethod: initialize };
+const defaultNamespace: IStatic = { initialize };
 
 export default defaultNamespace;
+
+export function initialize(selector?: string, selectedClass?: string) {
+    return new TableSelection(selector, selectedClass);
+}

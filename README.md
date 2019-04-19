@@ -59,7 +59,7 @@ LESS:<br/>
 <a name="usage"></a>
 ## Usage
 - Add `.table-selection` class to the table(s) you want to apply the selection functionality on.
-- Initialize the script using `new TableSelection()` or `TableSelection.initialize()`.
+- Initialize the script using `TableSelection.initialize()`.
 
 > **Note**<br>
 > You can use a different DOM selector, but you'll need to change the CSS styles accordingly and pass in your custom selector when creating the Javascript instance.
@@ -78,16 +78,7 @@ Parameter | Type | Required | Default | Description
 `selectedClass` | `string` | No | `"selected"` | sets the CSS class to apply to 'selected' table cells. E.g. `active`, `selected` or `highlighted`.
 
 
-Example usage of the constructor:<br/>
-
-```new TableSelection();```<br/>
-
-```new TableSelection('table');```<br/>
-
-```new TableSelection('table', 'active'');```
-
-
-The constructor can also be called in a static way:
+Example usage :
 ```TableSelection.initialize(selector: string = '.table-selection', selectedClass: string = 'selected')```
 
 For example:<br/>

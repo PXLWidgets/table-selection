@@ -2,12 +2,17 @@ declare const TableSelection: TableSelection.IStatic;
 export default TableSelection;
 export as namespace TableSelection;
 
-import { TableSelection as TableSelectionImplementation } from './src/js/table-selection';
+/* tslint:disable:interface-name */
+/* tslint:disable:no-empty-interface */
 
 declare namespace TableSelection {
 
     interface IStatic {
-        staticMethod(selector: string, activeClass: string): TableSelectionImplementation;
+        initialize(selector?: string, selectedClass?: string): SelectableTable
+    }
+
+    interface SelectableTable {
+        // readonly table: HTMLTableElement;
     }
 
     // Public object interfaces go here

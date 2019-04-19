@@ -22,10 +22,6 @@ interface ISelectionSnapshot {
 
 export class TableSelection {
 
-    public static initialize(selector = '.table-selection', selectedClass = 'selected') {
-        return new TableSelection(selector, selectedClass);
-    }
-
     protected selector: string;
     protected selectedClass: string;
 
