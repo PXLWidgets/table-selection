@@ -1,6 +1,6 @@
 /*!
- * TableSelection library v0.9.1 (https://github.com/PXLWidgets/table-selection)
- * Copyright (c) 2018 Wouter Smit
+ * TableSelection library v0.9.3 (https://github.com/PXLWidgets/table-selection)
+ * Copyright (c) 2019 Wouter Smit
  * Licensed under MIT (https://github.com/PXLWidgets/table-selection/blob/master/LICENSE)
 */
 
