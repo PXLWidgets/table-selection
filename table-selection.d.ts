@@ -8,7 +8,7 @@ export as namespace TableSelection;
 declare namespace TableSelection {
 
     interface IStatic {
-        initialize(selector?: string, selectedClass?: string): SelectableTable
+        initialize(selector?: string, selectedClass?: string): SelectableTable;
     }
 
     interface SelectableTable {
