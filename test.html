@@ -9,10 +9,10 @@
             --table-selection-color: HighlightText;
         }
 
-        .table-selection *::selection {
+        /*.table-selection *::selection {
             background: transparent;
             color: inherit;
-        }
+        }*/
     </style>
 
 </head>
@@ -32,11 +32,16 @@
     <table class="table table-striped table-selection">
         <thead>
         <tr><th>Header 1</th><th>Header 2</th><th>Header 3</th><th>Header 4</th><th>Header 5</th><th>Header 6</th><th>Header 7</th><th>Header 8</th></tr>
+        <tr><th>Header 1</th><th>Header 2</th><th>Header 3</th><th>Header 4</th><th>Header 5</th><th>Header 6</th><th>Header 7</th><th>Header 8</th></tr>
+        <tr><th>Header 1</th><th>Header 2</th><th>Header 3</th><th>Header 4</th><th>Header 5</th><th>Header 6</th><th>Header 7</th><th>Header 8</th></tr>
         </thead>
         <tbody>
         <tr><td class="selected">Row:1 Cell:1</td><td>Row:1 Cell:2</td><td>Row:1 Cell:3</td><td>Row:1 Cell:4</td><td>Row:1 Cell:5</td><td>Row:1 Cell:6</td><td>Row:1 Cell:7</td><td>Row:1 Cell:8</td></tr>
         <tr><td>Row:2 Cell:1</td><td>Row:2 Cell:2</td><td>Row:2 Cell:3</td><td>Row:2 Cell:4</td><td>Row:2 Cell:5</td><td>Row:2 Cell:6</td><td>Row:2 Cell:7</td><td>Row:2 Cell:8</td></tr>
         <tr><td>Row:3 Cell:1</td><td>Row:3 Cell:2</td><td>Row:3 Cell:3</td><td>Row:3 Cell:4</td><td>Row:3 Cell:5</td><td>Row:3 Cell:6</td><td>Row:3 Cell:7</td><td>Row:3 Cell:8</td></tr>
+        <tr><td>Row:4 Cell:1</td><td>Row:4 Cell:2</td><td>Row:4 Cell:3</td><td>Row:4 Cell:4</td><td>Row:4 Cell:5</td><td>Row:4 Cell:6</td><td>Row:4 Cell:7</td><td>Row:4 Cell:8</td></tr>
+        <tr><td>Row:5 Cell:1</td><td>Row:5 Cell:2</td><td>Row:5 Cell:3</td><td>Row:5 Cell:4</td><td>Row:5 Cell:5</td><td>Row:5 Cell:6</td><td>Row:5 Cell:7</td><td>Row:5 Cell:8</td></tr>
+        <tr><td>Row:6 Cell:1</td><td>Row:6 Cell:2</td><td>Row:6 Cell:3</td><td>Row:6 Cell:4</td><td>Row:6 Cell:5</td><td>Row:6 Cell:6</td><td>Row:6 Cell:7</td><td>Row:6 Cell:8</td></tr>
         </tbody>
     </table>
 
@@ -153,12 +158,28 @@
 <script>
 
 class TableSelection {
-    selector;
-    selection;
-    tableElement;
+    config = {
+        selector: '.table-selection',
+        selectionCssMode: 'style', // 'cssClass' | 'style'
+        selectionCssClass: 'selected', // string | null
+    };
 
-    constructor(selector = '.table-selection') {
-        this.selector = selector;
+    range;
+    tableElement;
+    theadElement;
+    tbodyElement;
+
+    constructor(config = {}) {
+        this.config = { ...this.config, ...config };
+
+        // Hide default selection
+        const styles = document.createElement('style');
+        styles.innerHTML = `${this.config.selector} *::selection {
+            background: transparent;
+            color: inherit;
+        }`;
+        document.head.appendChild(styles);
+
         document.addEventListener('selectionchange', () => this.onSelectionChange());
         document.addEventListener('copy', (e) => this.copyToClipboard(e));
     }
@@ -166,107 +187,109 @@ class TableSelection {
     onSelectionChange() {
         const selection = window.getSelection ? getSelection() : null;
 
-        this.reset();
+        this.deselect();
         if (! selection || selection.isCollapsed) {
             return;
         }
 
         const startCell = this.getCellElementFromNode(selection.anchorNode);
         const endCell = this.getCellElementFromNode(selection.focusNode);
-        this.tableElement = this.getTableFromCellElement(startCell);
+        const startTableElements = this.getTableElementsFromCellElement(startCell);
+        const endTableElements = this.getTableElementsFromCellElement(endCell);
 
-        if (! startCell || ! endCell || ! this.tableElement) {
+        if (! startCell || ! endCell || ! startTableElements || ! endTableElements) {
             return;
         }
 
-        this.selection = this.getSelectionByStartAndEndElement(startCell, endCell);
-        if (this.selection) {
-            this.highlight();
+        const isSameTable = startTableElements.table === endTableElements.table;
+        if (! isSameTable) {
+            return;
+        }
+
+        this.tableElement = startTableElements.table;
+        this.theadElement = startTableElements.thead;
+        this.tbodyElement = startTableElements.tbody;
+
+        this.range = this.getRangeByStartAndEndElement(startCell, endCell);
+        this.range.rows = this.getRowsInRange(this.range);
+        this.range.cells = this.getCellsInRange(this.range);
+
+        if (this.range) {
+            this.select();
         } else {
-            this.reset();
+            this.deselect();
         }
     }
 
-    copyToClipboard(e) {
-        if (! this.selection || ! this.selection.rows) {
-            return;
-        }
-
-        const selectionText = this.selection.rows
-            .map((row) => row.map((cell) => cell.innerText).join('\t')).join('\r\n');
-
-        if (! selectionText) {
-            return;
-        }
-
-        e.clipboardData.setData('text/plain', selectionText);
-        e.preventDefault();
-    }
-
-    highlight() {
-        if (this.selection) {
-            this.selection.cells.forEach((cellElement) => {
-                cellElement.style.backgroundColor = 'var(--table-selection-background-color)';
-                cellElement.style.color = 'var(--table-selection-color)';
-            });
-        }
-    }
-
-    reset() {
-        if (this.selection) {
-            this.selection.cells.forEach((cellElement) => {
-                cellElement.style.removeProperty('background-color');
-                cellElement.style.removeProperty('color');
-            });
-        }
-    }
-
-    getSelectionByStartAndEndElement(startCellElement, endCellElement) {
-        const numTableHeaders = this.tableElement.querySelectorAll('thead tr').length;
-
-        const selection = {
+    getRangeByStartAndEndElement(startCellElement, endCellElement) {
+        const range = {
             start: {
-                row: (startCellElement.parentElement.rowIndex - numTableHeaders) + 1,
+                row: startCellElement.parentElement.rowIndex + 1,
                 cell: startCellElement.cellIndex + 1,
             },
             end: {
-                row: (endCellElement.parentElement.rowIndex - numTableHeaders + 1),
+                row: endCellElement.parentElement.rowIndex + 1,
                 cell: endCellElement.cellIndex + 1,
             },
-            rows: null,
-            cells: null,
+            rows: [],
+            cells: [],
         };
 
         // Flip start/end if end > start
         if (
-            selection.start.row > selection.end.row
-            || (
-                selection.start.row === selection.end.row
-                && selection.start.cell > selection.end.cell
-            )
+            range.start.row > range.end.row
+            || (range.start.row === range.end.row && range.start.cell > range.end.cell)
         ) {
-            const tempEnd = selection.end;
-            selection.end = selection.start;
-            selection.start = tempEnd;
+            const tempEnd = range.end;
+            range.end = range.start;
+            range.start = tempEnd;
         }
 
-        selection.rows = Array.from(this.tableElement.querySelectorAll(
-            `tr:nth-of-type(n+${selection.start.row}):nth-of-type(-n+${selection.end.row})`
-        ));
+        return range;
+    }
 
-        selection.cells = [];
-        selection.rows.forEach((row, i) => {
+    getRowsInRange(range) {
+        const numTableHeaders = this.tableElement.querySelectorAll('thead tr').length;
+        let theadRows = [];
+        let tbodyRows = [];
+
+        const theadStart = range.start.row <= numTableHeaders ? Math.min(numTableHeaders, range.start.row) : null;
+        const theadEnd = range.start.row <= numTableHeaders ? Math.min(numTableHeaders, range.end.row) : null;
+
+        const tbodyStart = range.end.row > numTableHeaders ? Math.max(1, range.start.row - numTableHeaders) : null;
+        const tbodyEnd = range.end.row > numTableHeaders ? Math.max(1, range.end.row - numTableHeaders) : null;
+
+        if (theadStart) {
+            theadRows = Array.from(this.tableElement.querySelectorAll(
+                `thead tr:nth-of-type(n+${theadStart}):nth-of-type(-n+${theadEnd})`,
+            ));
+        }
+
+        if (tbodyStart) {
+            tbodyRows = Array.from(this.tableElement.querySelectorAll(
+                `tbody tr:nth-of-type(n+${tbodyStart}):nth-of-type(-n+${tbodyEnd})`,
+            ));
+        }
+
+        return [...theadRows, ...tbodyRows];
+    }
+
+    getCellsInRange(range) {
+        let cells = [];
+
+        range.rows.forEach((row, i) => {
             const cellsInRow = Array.from(row.querySelectorAll(
                 [
-                    `td:nth-of-type(n+${selection.start.cell}):nth-of-type(-n+${selection.end.cell})`,
-                    `th:nth-of-type(n+${selection.start.cell}):nth-of-type(-n+${selection.end.cell})`,
+                    `td:nth-of-type(n+${range.start.cell}):nth-of-type(-n+${range.end.cell})`,
+                    `th:nth-of-type(n+${range.start.cell}):nth-of-type(-n+${range.end.cell})`,
                 ].join(',')
             ));
-            selection.cells = [...selection.cells, ...cellsInRow];
-            selection.rows[i] = cellsInRow;
+
+            cells = [...cells, ...cellsInRow];
+            range.rows[i] = cellsInRow;
         });
 
-        return selection;
+        return cells;
     }
 
     getCellElementFromNode(inputNode) {
@@ -282,19 +305,67 @@ class TableSelection {
         return element;
     }
 
-    getTableFromCellElement(cellElement) {
+    getTableElementsFromCellElement(cellElement) {
         if (! cellElement) {
             return;
         }
 
-        const tbody = cellElement.parentElement.parentElement;
-        const table = tbody.tagName === 'TBODY' ? tbody.parentElement : tbody;
+        const tHeadOrBody = cellElement.parentElement.parentElement;
+        const table = ['TBODY', 'THEAD'].includes(tHeadOrBody.tagName) ? tHeadOrBody.parentElement : tHeadOrBody;
 
-        if (! table.matches(this.selector)) {
+        if (! table.matches(this.config.selector)) {
             return null;
         }
 
-        return table;
+        return {
+            table,
+            thead: table.querySelector('thead'),
+            tbody: table.querySelector('tbody'),
+        };
+    }
+
+    select() {
+        if (this.range && this.range.cells) {
+            this.range.cells.forEach((cellElement) => {
+                if (this.config.selectionCssMode === 'cssClass') {
+                    cellElement.classList.add(this.config.selectionCssClass);
+                } else {
+                    cellElement.style.backgroundColor = 'var(--table-selection-background-color)';
+                    cellElement.style.color = 'var(--table-selection-color)';
+                }
+            });
+        }
+    }
+
+    deselect() {
+        if (this.range && this.range.cells) {
+            this.range.cells.forEach((cellElement) => {
+                if (this.config.selectionCssMode === 'cssClass') {
+                    cellElement.classList.remove(this.config.selectionCssClass);
+                } else {
+                    cellElement.style.removeProperty('background-color');
+                    cellElement.style.removeProperty('color');
+                }
+            });
+            this.range = {};
+        }
+    }
+
+    copyToClipboard(e) {
+        if (! this.range || ! this.range.rows) {
+            return;
+        }
+
+        const selectionText = this.range.rows
+            .map((row) => row.map((cell) => cell.innerText).join('\t'))
+            .join('\r\n');
+
+        if (! selectionText) {
+            return;
+        }
+
+        e.clipboardData.setData('text/plain', selectionText);
+        e.preventDefault();
     }
 }
 
