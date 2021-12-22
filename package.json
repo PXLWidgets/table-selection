@@ -1,6 +1,6 @@
 {
   "name": "@pxlwidgets/table-selection",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "author": "Wouter Smit",
   "repository": "https://github.com/PXLWidgets/table-selection",
   "homepage": "https://github.com/PXLWidgets/table-selection",
@@ -35,17 +35,15 @@
   "scripts": {
     "clean:dist": "rm -rf cjs esm umd",
     "dev": "run-p \"build:** -- --watch\"",
-    "build": "npm run clean:dist && run-p build:**",
+    "build": "npm run clean:dist && run-p build:** && npm run create:dist",
     "build:cjs": "tsc --outDir cjs --sourceMap false -m CommonJS",
     "build:esm": "tsc --outDir esm --sourceMap false -m es2015",
-    "build:umd": "webpack",
-    "preversion": "npm run docs && git reset && git add ./CHANGELOG.md ./README.md ./docs/*",
+    "build:umd": "webpack --mode production",
+    "create:dist": "mkdir -p dist && mkdir -p dist/js && cp umd/* dist/js && cp dist/js/table-selection.min.js dist/js/table-selection.js",
+    "preversion": "npm run docs && git reset && git add ./CHANGELOG.md ./README.md",
     "prepublishOnly": "git checkout master && npm run test && npm run build",
     "test": "jest",
     "coveralls": "cat ./coverage/lcov.info | coveralls"
-  },
-  "dependencies": {
-    "typed-query-selector": "^2.4.1"
   },
   "devDependencies": {
     "@types/jest": "^26.0.15",

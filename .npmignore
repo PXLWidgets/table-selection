@@ -1,0 +1,12 @@
+node_modules
+docs
+src
+test
+coverage
+.*
+tsconfig.json
+tslint.json
+webpack.config.js
+jest.config.js
+yarn.lock
+typedoc.json

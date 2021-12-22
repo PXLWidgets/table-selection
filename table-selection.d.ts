@@ -17,5 +17,4 @@ declare namespace TableSelection {
         // readonly table: HTMLTableElement;
     }
 
-    // Public object interfaces go here
 }

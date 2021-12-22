@@ -1,3 +1,9 @@
+/*!
+ * TableSelection library v1.0.0 (https://github.com/PXLWidgets/table-selection)
+ * Copyright (c) 2019 Wouter Smit
+ * Licensed under MIT (https://github.com/PXLWidgets/table-selection/blob/master/LICENSE)
+*/
+
 import { TableSelectionConfig } from './interfaces/TableSelectionConfig';
 import { TableSelectionRange } from './interfaces/TableSelectionRange';
 import { TableSelectionTableElements } from './interfaces/TableSelectionTableElements';
@@ -38,6 +44,7 @@ export class TableSelection {
 
         const startCell: HTMLTableCellElement | null = this.getCellElementFromNode(selection.anchorNode);
         const endCell: HTMLTableCellElement | null = this.getCellElementFromNode(selection.focusNode);
+
         if (! startCell || ! endCell) {
             return;
         }
@@ -93,13 +100,11 @@ export class TableSelection {
         };
 
         // Flip start/end if end > start
-        if (
-            this.range.start.row > this.range.end.row
-            || (this.range.start.row === this.range.end.row && this.range.start.cell > this.range.end.cell)
-        ) {
-            const tempEnd = this.range.end;
-            this.range.end = this.range.start;
-            this.range.start = tempEnd;
+        if (this.range.start.cell > this.range.end.cell) {
+            [this.range.start.cell, this.range.end.cell] = [this.range.end.cell, this.range.start.cell];
+        }
+        if (this.range.start.row > this.range.end.row) {
+            [this.range.start.row, this.range.end.row] = [this.range.end.row, this.range.start.row];
         }
     }
 
@@ -163,6 +168,8 @@ export class TableSelection {
             this.range.rows[i] = cellsInRow;
         });
 
+        this.range.cells = cells;
+
     }
 
     protected getCellElementFromNode(inputNode: Node | null): HTMLTableCellElement | null {
@@ -171,7 +178,7 @@ export class TableSelection {
         }
 
         const element: HTMLTableCellElement | null = inputNode.nodeName === '#text'
-            ? (inputNode.parentElement as HTMLTableCellElement)
+            ? (inputNode.parentElement as HTMLTableCellElement).closest('td,th')
             : (inputNode as HTMLTableCellElement);
 
         if (! element || ! ['TD', 'TH'].includes(element.tagName)) {
@@ -208,8 +215,8 @@ export class TableSelection {
                 if (this.config.selectionCssMode === 'cssClass' && this.config.selectionCssClass) {
                     cellElement.classList.add(this.config.selectionCssClass);
                 } else {
-                    cellElement.style.backgroundColor = 'var(--table-selection-background-color)';
-                    cellElement.style.color = 'var(--table-selection-color)';
+                    cellElement.style.backgroundColor = 'var(--table-selection-background-color, Highlight)';
+                    cellElement.style.color = 'var(--table-selection-color, HighlightText)';
                 }
             });
         }
@@ -245,4 +252,5 @@ export class TableSelection {
         e.clipboardData.setData('text/plain', selectionText);
         e.preventDefault();
     }
+
 }
