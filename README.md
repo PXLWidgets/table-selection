@@ -9,14 +9,15 @@ Adds **rectangular selection** to **HTML tables** to allow copy of specific colu
 - Includes **clipboard** support with table formatting for **Excel** or other **spreadsheet** software!
 - It even works on **mobile**!
 - Tested and working in Chrome, Firefox, Edge, Mobile Chrome and Samsung Browser
+- Lightweight (5,4 kB)
 
 <br/>
 
 ## Table of contents
 - [Installation](#installation)
-    - [Using precompiled js + css](#installation-precompiled)
+    - [Using precompiled js](#installation-precompiled)
     - [Using a module loader](#installation-module-loader)
-    - [SASS / SCSS / LESS](#installation-styles)
+- [Upgrading from 0.9.x](#upgrading)
 - [Usage](#usage)
 - [API](#api)
 - [Demo](#demo)
@@ -27,6 +28,7 @@ Adds **rectangular selection** to **HTML tables** to allow copy of specific colu
 <a name="installation"></a>
 ## Installation
 - Run `npm i @pxlwidgets/table-selection` or download the sources.
+
 
 <a name="installation-precompiled"></a>
 ##### Using the precompiled js and css files
@@ -40,60 +42,74 @@ Adds **rectangular selection** to **HTML tables** to allow copy of specific colu
 
 The package includes files for integration in **Typescript** and **ES6** projects:
 
-```import {TableSelection} from @pxlwidgets/table-selection;```<br/>
-
-
-<a name="installation-styles"></a>
-##### SASS / SCSS / LESS
-
-The package also includes LESS and SASS (SCSS) sources:
-
-SCSS:<br/>
-```@import '~/@pxlwidgets/table-selection'```<br/>
-
-LESS:<br/>
-```@include 'node_modules/@pxlwidgets/table-selection/dist/less/table-selection.less'```
-
+```typescript
+import { TableSelection } from '@pxlwidgets/table-selection';
+```
 <br/>
+<br/>
+
+<a name="upgrading"></a>
+## Upgrading from v0.9.x
+v1.x no longer uses a stylesheet file, so you should remove any of these CSS/SCSS/LESS imports:
+- CSS: `dist/css/table-selection.css`
+- SCSS: `@import '~/@pxlwidgets/table-selection'`
+- LESS: `@include 'node_modules/@pxlwidgets/table-selection/dist/less/table-selection.less'`
+
 
 <a name="usage"></a>
 ## Usage
 - Add `.table-selection` class to the table(s) you want to apply the selection functionality on.
-- Initialize the script using `TableSelection.initialize()`.
+- Initialize the script using `new TableSelection()`.
 
 > **Note**<br>
-> You can use a different DOM selector, but you'll need to change the CSS styles accordingly and pass in your custom selector when creating the Javascript instance.
+> You can use a different DOM selector by setting the `selector` configuration option when creating the Javascript instance.
 
 <br/>
 
 <a name="api"></a>
 ## Javascript API
-The constructor takes two arguments, which are both optional.
+The constructor takes one, optional argument.
 
-```constructor(selector: string = '.table-selection', selectedClass: string = 'selected')```
+```typescript
+constructor(config: TableSelectionConfig = {})
+```
 
-Parameter | Type | Required | Default | Description
----|---|---|---|---
-`selector` | `string` | No | `".table-selection"` | sets the DOM selector to apply the functionality to. This should point to one or more table elements on your page. E.g. `table` or `.table`.
-`selectedClass` | `string` | No | `"selected"` | sets the CSS class to apply to 'selected' table cells. E.g. `active`, `selected` or `highlighted`.
+The `config` parameter (interface `TableSelectionConfig`) has the following properties: 
+
+| Property            | Type     | Required | Default              | Description                                                                                                                                                                                                                       |
+|---------------------|----------|----------|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `selector`          | `string` | No       | `'.table-selection'` | Sets the DOM selector to apply the functionality to. This should point to one or more table elements on your page. E.g. `table` or `.table`.                                                                                      |
+| `selectionCssMode`  | `string` | No       | `'.style'`           | One of `'style'` or `'cssClass'`. Sets which method to use to highlight selected cells. `'style'` uses style attributes with CSS variables. `'cssClass'` adds the CSS class specified in the `selectionCssClass` config property. |
+| `selectionCssClass` | `string` | No       | `'selected'`         | Sets the CSS class to apply to 'selected' table cells. E.g. `active`, `selected` or `highlighted`. This only applies if the `selectionCssMode` is set to `'cssClass'` and requires you to add styles for the selector yourself.   |
 
 
 Example usage :
-```TableSelection.initialize(selector: string = '.table-selection', selectedClass: string = 'selected')```
+```typescript
+new TableSelection({
+  selector: '#my-table',
+  selectionCssMode: 'cssClass',
+  selectionCssClass: 'my-highlighted-cell-class',
+});
+```
+<br/>
 
 For example:<br/>
 
-```TableSelection.initialize();```<br/>
+```typescript
+new TableSelection();
+```
+<br/>
 
-```TableSelection.initialize('table');```<br/>
-
-```TableSelection.initialize('table', 'active'');```<br/>
+```typescript
+new TableSelection({ selector: 'table' });
+```
+<br/>
 
 <br/>
 
 <a name="demo"></a>
 ## Demo
-[View live example on Codepen](https://codepen.io/opznhaarlems/pen/KoMarx)
+[View live example on Codepen](https://codepen.io/opznhaarlems/full/YzrxmOr)
 
 <br/>
 

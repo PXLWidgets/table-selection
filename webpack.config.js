@@ -1,40 +1,28 @@
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
-const {resolve} = require("path");
+const { resolve } = require('path');
 
 module.exports = {
-    entry: {
-        "table-selection": "./src/index.ts",
-        "table-selection.min": "./src/index.ts",
-    },
-    mode: "production",
-    output: {
-        // filename: "table-selection.js",
-        library: "TableSelection",
-        libraryTarget: "umd",
-        path: resolve(__dirname, "umd"),
-    },
-
-    optimization: {
-        minimizer: [
-            new UglifyJsPlugin({
-                sourceMap: true,
-                test: /\.min\.js$/,
-            }),
-        ],
-    },
-
-    devtool: "source-map",
-    resolve: {
-        extensions: [".ts", ".js"]
-    },
-
+    mode: 'production',
+    entry: './src/index.ts',
     module: {
         rules: [
             {
-                exclude: /node_modules/,
-                loaders: ["ts-loader"],
                 test: /\.ts$/,
+                use: 'ts-loader',
+                exclude: /node_modules/,
             },
         ],
+    },
+    devtool: 'source-map',
+    resolve: {
+        extensions: ['.ts', '.js'],
+    },
+    output: {
+        path: resolve(__dirname, 'umd'),
+        filename: 'table-selection.min.js',
+        library: {
+            name: 'TableSelection',
+            type: 'umd',
+            export: 'default',
+        },
     },
 };

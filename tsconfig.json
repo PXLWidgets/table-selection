@@ -1,18 +1,19 @@
 {
     "compilerOptions": {
         "moduleResolution": "node",
-        "lib": ["es2015", "dom"],
+        "lib": ["es2017", "dom"],
         "target": "es5",
-        "module":"commonjs",
+        "module": "es2015",
         "noImplicitAny": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
-        "suppressImplicitAnyIndexErrors": true,
         "sourceMap": true,
         "strictNullChecks": true,
         "strictFunctionTypes": true,
         "declaration": true,
-        "outDir": "cjs"
+        "outDir": "cjs",
+        "downlevelIteration": true,
+        "allowJs": true
     },
     "include":[
         "src/**/*.ts"
